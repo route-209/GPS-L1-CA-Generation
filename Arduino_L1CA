@@ -1,0 +1,42 @@
+const unsigned int cp = 1023;  //チップ数
+const unsigned int tap1 = 2; //tap
+const unsigned int tap2 = 6; //tap
+ 
+void setup() {
+  pinMode(13,OUTPUT);
+  digitalWrite(13,LOW);
+}
+ 
+void loop() {
+  unsigned int i;
+  unsigned int G1 = 0x3FF;  //G1宣言(初期値1111111111)
+  unsigned int G2 = 0x3FF;  //G2宣言(初期値1111111111)
+  unsigned int G2i; //G2i宣言
+  unsigned int CA; //C/Aコード宣言
+  unsigned int G1x1;
+  unsigned int G2x1;
+  
+  i = 0;
+  while (i < cp){
+    G2i = ((G2 >> (tap1 - 1)) & 1) ^ ((G2 >> (tap2 - 1)) & 1); //tapで指定した2値のXOR
+    CA = (G1 & 1) ^ G2i;  //C/Aコード(G1のLSBとG2iのXOR)
+    
+    if (CA == 1){
+      digitalWrite(13,HIGH);
+    } 
+    else {
+      digitalWrite(13,LOW);
+    }
+    delay(100);
+    
+    G1x1 = ((G1 >> 2) & 1) ^ ((G1 >> 9) & 1); //3,10番目のXOR     
+    G1 = G1 >> 1;  //1bit右にシフト
+    G1 |= G1x1 << 9;  //G1x1をMSBに代入
+    
+    G2x1 = ((G1 >> 1) & 1) ^ ((G1 >> 2) & 1) ^ ((G1 >> 5) & 1) ^ ((G1 >> 7) & 1) ^ ((G1 >> 8) & 1) ^ ((G1 >> 9) & 1); //2,3,6,8,9,10番目のXOR    
+    G2 = G2 >> 1;  //1bit右にシフト
+    G2 |= G2x1 << 9;  //G2x1をMSBに代入
+ 
+    i++;
+  };
+}
